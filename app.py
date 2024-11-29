@@ -122,9 +122,9 @@ def generate_pdf(data, template_path):
     pdf.set_xy(40, 200)
     pdf.cell(0, 10, f"Responsable: {data['Responsable de afiliación']}", ln=True)
 
-    # Guardar el PDF en un objeto BytesIO
-    data_pdf = BytesIO()
-    pdf.output(name=data_pdf)  # Aquí está el ajuste
+    # Guardar el PDF como string y escribirlo en BytesIO
+    pdf_content = pdf.output(dest='S').encode('latin1')  # El contenido del PDF como bytes
+    data_pdf = BytesIO(pdf_content)
     data_pdf.seek(0)
 
     # Superponer el contenido del nuevo PDF sobre la plantilla
@@ -140,6 +140,7 @@ def generate_pdf(data, template_path):
     writer.write(combined_pdf)
     combined_pdf.seek(0)
     return combined_pdf
+
 
 
 def combine_pdfs(pdf_files):
