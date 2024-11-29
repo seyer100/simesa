@@ -147,14 +147,18 @@ def combine_pdfs(pdf_files):
     Combina múltiples PDFs en un solo archivo en memoria.
     """
     writer = PdfWriter()
+    
     for pdf in pdf_files:
-        reader = PdfReader(pdf)
+        # Asegurarse de que el archivo en memoria esté al inicio
+        pdf.seek(0)  
+        reader = PdfReader(pdf)  # Leer desde BytesIO
         for page in reader.pages:
             writer.add_page(page)
 
+    # Guardar el archivo combinado en memoria
     combined_pdf = BytesIO()
     writer.write(combined_pdf)
-    combined_pdf.seek(0)
+    combined_pdf.seek(0)  # Volver al inicio del archivo en memoria
     return combined_pdf
 
 
