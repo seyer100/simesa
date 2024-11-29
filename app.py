@@ -73,9 +73,7 @@ def generate_pdf(data, template_path):
     pdf.set_xy(33, 145)
     pdf.cell(0, 10, f"{data['Nombres']} {data['Apellido paterno']} {data['Apellido materno']}", ln=True)
 
-   
-
-     if data['Sexo'].lower() == "femenino":
+    if data['Sexo'].lower() == "femenino":
         self.set_xy(42, 156)  # Coordenadas para "Femenino"
         self.cell(5, 5, "X", ln=1)
     elif data['Sexo'].lower() == "masculino":
