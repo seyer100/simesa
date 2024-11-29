@@ -74,11 +74,11 @@ def generate_pdf(data, template_path):
     pdf.cell(0, 10, f"{data['Nombres']} {data['Apellido paterno']} {data['Apellido materno']}", ln=True)
 
     if data['Sexo'].lower() == "femenino":
-        self.set_xy(42, 156)  # Coordenadas para "Femenino"
-        self.cell(5, 5, "X", ln=1)
+        pdf.set_xy(42, 156)  # Coordenadas para "Femenino"
+        pdf.cell(5, 5, "X", ln=1)
     elif data['Sexo'].lower() == "masculino":
-        self.set_xy(61, 156)  # Coordenadas para "Masculino"
-        self.cell(5, 5, "X", ln=1)
+        pdf.set_xy(61, 156)  # Coordenadas para "Masculino"
+        pdf.cell(5, 5, "X", ln=1)
 
     rfc = str(data["Registro federal de contribuyente"]).zfill(13)
     rfc_positions = [(50 + i * 10, 90) for i in range(13)]
