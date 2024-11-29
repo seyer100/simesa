@@ -1,11 +1,11 @@
 /* General */
 body {
-    background-color: #2349a1;
+    background-color: #000000;
 }
 
 /* Encabezado */
 .header {
-    background-color: #0d6efd; /* Azul principal */
+    background-color: #2349a1; /* Azul principal */
     color: white;
     padding: 20px 0;
 }
