@@ -28,3 +28,4 @@ template_path = "templates_pdf/plantilla.pdf"  # Ruta a tu plantilla
 grid_pdf = GridPDF(template_path)
 grid_pdf.add_grid()
 grid_pdf.output("plantilla_con_cuadricula.pdf")
+
