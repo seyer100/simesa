@@ -4,6 +4,7 @@ import pandas as pd
 from fpdf import FPDF
 from PyPDF2 import PdfReader, PdfWriter
 from io import BytesIO
+from datetime import datetime  # Importación añadida para manejar objetos datetime
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
@@ -32,8 +33,16 @@ def upload():
         data = pd.read_excel(file_path)
         data.columns = data.columns.str.strip()  # Eliminar espacios en los nombres de las columnas
 
+        # Convertir la fecha al formato DD/MM/AAAA usando pandas
+        if 'Fecha de ingreso a la institución' in data.columns:
+            data['Fecha de ingreso a la institución'] = pd.to_datetime(
+                data['Fecha de ingreso a la institución'], 
+                errors='coerce'  # Maneja errores convirtiendo valores no válidos a NaT
+            ).dt.strftime("%d/%m/%Y")  # Formato DD/MM/AAAA
+
         pdf_files = []
         template_path = os.path.join(TEMPLATES_PDF_FOLDER, "plantilla.pdf")
+
 
         # Generar un PDF para cada fila
         for index, row in data.iterrows():
@@ -48,6 +57,12 @@ def upload():
 
         # Descargar el archivo combinado
         return send_file(combined_pdf, as_attachment=True, download_name="combined.pdf", mimetype='application/pdf')
+
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print("Error detallado:", error_details)
+        return render_template("index.html", error_message=f"Error al procesar el archivo: {str(e)}")
 
     except Exception as e:
         import traceback
@@ -70,57 +85,116 @@ def generate_pdf(data, template_path):
     pdf.set_font("Arial", size=10)
 
     # Llenar los datos en posiciones específicas
-    pdf.set_xy(33, 145)
-    pdf.cell(0, 10, f"{data['Apellido paterno']} {data['Apellido materno']} {data['Nombres']}", ln=True)
+    
+    pdf.set_xy(120, 52.5)  # Coordenada para Fecha afiliacion
+    pdf.cell(0, 10, f"{data['Fecha afiliacion']}", ln=False)
+
+    pdf.set_xy(50, 90)  # Coordenada para Unidad administrativa
+    pdf.cell(0, 10, f"{data['Unidad operativa']}", ln=False)
+    
+    pdf.set_xy(33, 157)  # Coordenada para Apellido paterno
+    pdf.cell(0, 10, f"{data['Apellido paterno']}", ln=False)
+
+    pdf.set_xy(83, 157)  # Coordenada para Apellido materno
+    pdf.cell(0, 10, f"{data['Apellido materno']}", ln=False)
+
+    pdf.set_xy(127, 157)  # Coordenada para Nombres
+    pdf.cell(0, 10, f"{data['Nombres']}", ln=True)
 
     if data['Sexo'].lower() == "femenino":
-        pdf.set_xy(42, 180)  # Coordenadas para "Femenino"
+        pdf.set_xy(42, 172)  # Coordenadas para "Femenino"
         pdf.cell(5, 5, "X", ln=1)
     elif data['Sexo'].lower() == "masculino":
-        pdf.set_xy(61, 180)  # Coordenadas para "Masculino"
+        pdf.set_xy(58, 172)  # Coordenadas para "Masculino"
         pdf.cell(5, 5, "X", ln=1)
 
     rfc = str(data["Registro federal de contribuyente"]).zfill(13)
-    rfc_positions = [(50 + i * 10, 90) for i in range(13)]
+    rfc_positions = [(67 + i * 6, 172) for i in range(13)]
     for i, char in enumerate(rfc):
         pdf.set_xy(*rfc_positions[i])
         pdf.cell(5, 5, char, ln=1)
 
-    pdf.set_xy(40, 100)
+    if data['Nacionalidad'].lower() == "mexicano":
+        pdf.set_xy(157, 168)  # Coordenadas para "Mexicano"
+        pdf.cell(5, 5, "X", ln=1)
+    elif data['Nacionalidad'].lower() == "extranjero":
+        pdf.set_xy(175, 168)  # Coordenadas para "extranjero"
+        pdf.cell(5, 5, "X", ln=1)
+
+    pdf.set_xy(30, 181)
     pdf.cell(0, 10, data['Domicilio'], ln=True)
 
-    pdf.set_xy(40, 110)
+    pdf.set_xy(170, 181)
     pdf.cell(0, 10, str(data['Edad']), ln=True)
     
-    pdf.set_xy(40, 120)
+    pdf.set_xy(30, 192)  # Coordenadas para Municipio/Alcaldía
     pdf.cell(0, 10, data['Municipio/alcaldía'], ln=True)
 
-    pdf.set_xy(40, 130)
+    # Estado
+    pdf.set_xy(98, 192)  # Coordenadas para Estado
     pdf.cell(0, 10, data['Estado'], ln=True)
 
-    cp = str(data["Código postal"]).zfill(5)
-    cp_positions = [(50 + i * 10, 140) for i in range(5)]
+    # Código Postal
+    cp = str(data["Código postal"]).zfill(5)  # Asegurarse de que tenga 5 caracteres, rellenando con ceros si es necesario
+    cp_positions = [(158 + i * 6, 194.4) for i in range(5)]  # Coordenadas iniciales y espaciado para cada dígito
     for i, char in enumerate(cp):
-        pdf.set_xy(*cp_positions[i])
-        pdf.cell(5, 5, char, ln=1)
+        pdf.set_xy(cp_positions[i][0], cp_positions[i][1])  # Misma 'y' para todos, ajustando 'x'
+        pdf.cell(5, 5, char, ln=False)  # ln=False evita que salte de línea después de cada dígito
 
-    pdf.set_xy(40, 150)
-    pdf.cell(0, 10, f"Fecha de ingreso: {data['Fecha de ingreso a la institución']}", ln=True)
+    # Fecha de ingreso
+    fecha_ingreso = data.get('Fecha de ingreso a la institución', '')
+    if pd.notna(fecha_ingreso) and isinstance(fecha_ingreso, (datetime, pd.Timestamp)):
+        fecha_ingreso = fecha_ingreso.strftime("%d/%m/%Y")
+    elif isinstance(fecha_ingreso, str) and '/' in fecha_ingreso:
+        # Si ya es un string en formato DD/MM/AAAA
+        pass
+    else:
+        fecha_ingreso = ""  # Campo vacío
 
-    pdf.set_xy(40, 160)
-    pdf.cell(0, 10, f"Puesto: {data['Denominación de puesto']}", ln=True)
+    if fecha_ingreso:
+        dia, mes, anio = fecha_ingreso.split('/')  # Asume formato válido
+        pdf.set_xy(29, 215)
+        pdf.cell(10, 10, dia, ln=False)
+        pdf.set_xy(42, 215)
+        pdf.cell(10, 10, mes, ln=False)
+        pdf.set_xy(53, 215)
+        pdf.cell(10, 10, anio, ln=True)
 
-    pdf.set_xy(40, 170)
-    pdf.cell(0, 10, f"Servicio: {data['Servicio asignado']}", ln=True)
+    
+    pdf.set_xy(71, 215)
+    pdf.cell(0, 10, f"{data['Denominación de puesto']}", ln=True)
 
-    pdf.set_xy(40, 180)
-    pdf.cell(0, 10, f"Fecha de ingreso a OPD: {data['Fecha de ingreso a OPD']}", ln=True)
+    pdf.set_xy(134, 211)
+    pdf.cell(0, 10, f"{data['Servicio asignado']}", ln=True)
 
-    pdf.set_xy(40, 190)
-    pdf.cell(0, 10, f"Función Real: {data['Función real']}", ln=True)
+    # Fecha de ingreso a OPD
+    fecha_opd = data.get('Fecha de ingreso a OPD', '')
+    if pd.notna(fecha_opd) and isinstance(fecha_opd, (datetime, pd.Timestamp)):
+        fecha_opd = fecha_opd.strftime("%d/%m/%Y")
+    elif isinstance(fecha_opd, str) and '/' in fecha_opd:
+        # Si ya es un string en formato DD/MM/AAAA
+        pass
+    else:
+        fecha_opd = ""  # Campo vacío
 
-    pdf.set_xy(40, 200)
-    pdf.cell(0, 10, f"Responsable: {data['Responsable de afiliación']}", ln=True)
+    if fecha_opd:
+        dia_opd, mes_opd, anio_opd = fecha_opd.split('/')
+        pdf.set_xy(29, 240)
+        pdf.cell(10, 10, dia_opd, ln=False)
+        pdf.set_xy(42, 240)
+        pdf.cell(10, 10, mes_opd, ln=False)
+        pdf.set_xy(53, 240)
+        pdf.cell(10, 10, anio_opd, ln=True)
+
+
+    # Manejo de Función real
+    funcion_real = data.get('Función real', '')
+    if pd.notna(funcion_real) and funcion_real:
+        pdf.set_xy(134, 233)
+        pdf.cell(0, 10, funcion_real, ln=True)
+
+    pdf.set_xy(115, 263)
+    pdf.cell(0, 10, f"{data['Responsable de afiliación']}", ln=True)
 
     # Guardar el PDF como string y escribirlo en BytesIO
     pdf_content = pdf.output(dest='S').encode('latin1')  # El contenido del PDF como bytes
