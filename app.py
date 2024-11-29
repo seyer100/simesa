@@ -122,9 +122,9 @@ def generate_pdf(data, template_path):
     pdf.set_xy(40, 200)
     pdf.cell(0, 10, f"Responsable: {data['Responsable de afiliación']}", ln=True)
 
-    # Guardar el PDF en memoria
+    # Guardar el PDF en un objeto BytesIO
     data_pdf = BytesIO()
-    pdf.output(data_pdf)
+    pdf.output(name=data_pdf)  # Aquí está el ajuste
     data_pdf.seek(0)
 
     # Superponer el contenido del nuevo PDF sobre la plantilla
