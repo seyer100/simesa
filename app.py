@@ -70,14 +70,14 @@ def generate_pdf(data, template_path):
     pdf.set_font("Arial", size=10)
 
     # Llenar los datos en posiciones específicas
-    pdf.set_xy(40, 50)
+    pdf.set_xy(33, 145)
     pdf.cell(0, 10, f"{data['Nombres']} {data['Apellido paterno']} {data['Apellido materno']}", ln=True)
 
     if data['Sexo'].lower() == "femenino":
         pdf.set_xy(50, 80)
         pdf.cell(5, 5, "X", ln=1)
     elif data['Sexo'].lower() == "masculino":
-        pdf.set_xy(80, 80)
+        pdf.set_xy(60, 156)
         pdf.cell(5, 5, "X", ln=1)
 
     rfc = str(data["Registro federal de contribuyente"]).zfill(13)
