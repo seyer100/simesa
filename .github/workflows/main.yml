@@ -1,0 +1,36 @@
+name: Generar PDF con Cuadrícula
+
+on:
+  workflow_dispatch:  # Permite ejecutar el flujo manualmente desde GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Clonar el repositorio
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Configurar Python
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    # Instalar dependencias
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install fpdf
+
+    # Ejecutar el script
+    - name: Generate PDF with grid
+      run: python generar_cuadricula.py
+
+    # Guardar el PDF como artefacto
+    - name: Upload PDF
+      uses: actions/upload-artifact@v3
+      with:
+        name: plantilla_con_cuadricula
+        path: plantilla_con_cuadricula.pdf
