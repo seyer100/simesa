@@ -28,15 +28,18 @@ def upload():
     file.save(file_path)
 
     try:
-        # Leer los datos del archivo Excel
+        # Leer los datos del archivo Excel y limpiar nombres de columnas
         data = pd.read_excel(file_path)
-        pdf_files = []
+        data.columns = data.columns.str.strip()  # Eliminar espacios en los nombres de las columnas
 
-        # Ruta de la plantilla
+        pdf_files = []
         template_path = os.path.join(TEMPLATES_PDF_FOLDER, "plantilla.pdf")
 
         # Generar un PDF para cada fila
-        for _, row in data.iterrows():
+        for index, row in data.iterrows():
+            if pd.isna(row["Nombres"]):  # Validar si "Nombres" está vacío
+                print(f"Fila {index} tiene un valor nulo en 'Nombres'. Saltando...")
+                continue
             pdf_in_memory = generate_pdf(row, template_path)
             pdf_files.append(pdf_in_memory)
 
@@ -47,6 +50,9 @@ def upload():
         return send_file(combined_pdf, as_attachment=True, download_name="combined.pdf", mimetype='application/pdf')
 
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print("Error detallado:", error_details)
         return render_template("index.html", error_message=f"Error al procesar el archivo: {str(e)}")
 
 
@@ -63,49 +69,41 @@ def generate_pdf(data, template_path):
     pdf.add_page()
     pdf.set_font("Arial", size=10)
 
-    # Llenar los datos en posiciones específicas (ajustar según plantilla)
-
-    # Datos personales
-    pdf.set_xy(40, 50)  # Posición para el nombre completo
+    # Llenar los datos en posiciones específicas
+    pdf.set_xy(40, 50)
     pdf.cell(0, 10, f"{data['Nombres']} {data['Apellido paterno']} {data['Apellido materno']}", ln=True)
 
-    # Sexo
     if data['Sexo'].lower() == "femenino":
-        pdf.set_xy(50, 80)  # Posición para "Femenino"
+        pdf.set_xy(50, 80)
         pdf.cell(5, 5, "X", ln=1)
     elif data['Sexo'].lower() == "masculino":
-        pdf.set_xy(80, 80)  # Posición para "Masculino"
+        pdf.set_xy(80, 80)
         pdf.cell(5, 5, "X", ln=1)
 
-    # RFC - Separar por dígitos
-    rfc_positions = [(50 + i * 10, 90) for i in range(13)]  # Ajustar las posiciones
-    for i, char in enumerate(data['Registro federal de contribuyente']):
+    rfc = str(data["Registro federal de contribuyente"]).zfill(13)
+    rfc_positions = [(50 + i * 10, 90) for i in range(13)]
+    for i, char in enumerate(rfc):
         pdf.set_xy(*rfc_positions[i])
         pdf.cell(5, 5, char, ln=1)
 
-    # Domicilio
     pdf.set_xy(40, 100)
     pdf.cell(0, 10, data['Domicilio'], ln=True)
 
-    # Edad
     pdf.set_xy(40, 110)
     pdf.cell(0, 10, str(data['Edad']), ln=True)
 
-    # Municipio/Alcaldía
     pdf.set_xy(40, 120)
     pdf.cell(0, 10, data['Municipio/alcaldía'], ln=True)
 
-    # Estado
     pdf.set_xy(40, 130)
     pdf.cell(0, 10, data['Estado'], ln=True)
 
-    # Código postal - Separar por dígitos
+    cp = str(data["Código postal"]).zfill(5)
     cp_positions = [(50 + i * 10, 140) for i in range(5)]
-    for i, char in enumerate(data['Código postal']):
+    for i, char in enumerate(cp):
         pdf.set_xy(*cp_positions[i])
         pdf.cell(5, 5, char, ln=1)
 
-    # Datos laborales
     pdf.set_xy(40, 150)
     pdf.cell(0, 10, f"Fecha de ingreso: {data['Fecha de ingreso a la institución']}", ln=True)
 
@@ -121,11 +119,10 @@ def generate_pdf(data, template_path):
     pdf.set_xy(40, 190)
     pdf.cell(0, 10, f"Función Real: {data['Función real']}", ln=True)
 
-    # Responsable de afiliación
     pdf.set_xy(40, 200)
     pdf.cell(0, 10, f"Responsable: {data['Responsable de afiliación']}", ln=True)
 
-    # Guardar el PDF con datos en memoria
+    # Guardar el PDF en memoria
     data_pdf = BytesIO()
     pdf.output(data_pdf)
     data_pdf.seek(0)
@@ -150,13 +147,11 @@ def combine_pdfs(pdf_files):
     Combina múltiples PDFs en un solo archivo en memoria.
     """
     writer = PdfWriter()
-
     for pdf in pdf_files:
         reader = PdfReader(pdf)
         for page in reader.pages:
             writer.add_page(page)
 
-    # Guardar el archivo combinado en memoria
     combined_pdf = BytesIO()
     writer.write(combined_pdf)
     combined_pdf.seek(0)
