@@ -1,3 +1,4 @@
+from PyPDF2 import PdfReader, PdfWriter
 from fpdf import FPDF
 
 class GridPDF(FPDF):
@@ -5,9 +6,8 @@ class GridPDF(FPDF):
         super().__init__()
         self.template_path = template_path
 
-    def add_grid(self):
+    def add_grid(self, output_pdf):
         self.add_page()
-        self.image(self.template_path, x=0, y=0, w=210, h=297)  # Tamaño A4 estándar
         self.set_font("Arial", size=6)
         self.set_text_color(255, 0, 0)
 
@@ -23,9 +23,36 @@ class GridPDF(FPDF):
             self.set_xy(x, 0)
             self.cell(5, 5, f"X={x}")
 
-# Crear un PDF con la cuadrícula
+        # Guardar las líneas de la cuadrícula en memoria
+        self.output(output_pdf)
+
+# Ruta de la plantilla y archivo de salida
 template_path = "templates_pdf/plantilla.pdf"  # Ruta a tu plantilla
+output_pdf = "plantilla_con_cuadricula.pdf"
+
+# Crear PDF con cuadrícula
 grid_pdf = GridPDF(template_path)
-grid_pdf.add_grid()
-grid_pdf.output("plantilla_con_cuadricula.pdf")
+grid_pdf.add_grid(output_pdf)
+
+# Ahora combinar la cuadrícula con la plantilla
+reader = PdfReader(template_path)
+writer = PdfWriter()
+
+# Leer la plantilla
+template_page = reader.pages[0]
+
+# Leer la cuadrícula generada
+grid_reader = PdfReader(output_pdf)
+grid_page = grid_reader.pages[0]
+
+# Fusionar las páginas
+template_page.merge_page(grid_page)
+
+# Escribir el resultado final
+with open("final_plantilla_con_cuadricula.pdf", "wb") as f:
+    writer.add_page(template_page)
+    writer.write(f)
+
+print("PDF con cuadrícula generado correctamente.")
+
 
