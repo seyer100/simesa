@@ -7,23 +7,24 @@ class GridPDF(FPDF):
         self.template_path = template_path
 
     def add_grid(self, output_pdf):
+        # Crear una página con la cuadrícula
         self.add_page()
         self.set_font("Arial", size=6)
         self.set_text_color(255, 0, 0)
 
-        # Dibujar líneas horizontales
-        for y in range(0, 297, 10):  # Ajusta el paso según lo necesites
+        # Dibujar líneas horizontales (cada 10 mm)
+        for y in range(0, 297, 10):  # Ajusta el paso de acuerdo con tus necesidades
             self.line(0, y, 210, y)  # Línea horizontal
             self.set_xy(0, y)
             self.cell(0, 5, f"Y={y}", ln=1)
 
-        # Dibujar líneas verticales
-        for x in range(0, 210, 10):  # Ajusta el paso según lo necesites
+        # Dibujar líneas verticales (cada 10 mm)
+        for x in range(0, 210, 10):  # Ajusta el paso de acuerdo con tus necesidades
             self.line(x, 0, x, 297)  # Línea vertical
             self.set_xy(x, 0)
             self.cell(5, 5, f"X={x}")
 
-        # Guardar las líneas de la cuadrícula en memoria
+        # Guardar la cuadrícula en un archivo temporal
         self.output(output_pdf)
 
 # Ruta de la plantilla y archivo de salida
@@ -54,5 +55,4 @@ with open("final_plantilla_con_cuadricula.pdf", "wb") as f:
     writer.write(f)
 
 print("PDF con cuadrícula generado correctamente.")
-
 
