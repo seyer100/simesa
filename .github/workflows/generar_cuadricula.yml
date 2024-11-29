@@ -22,7 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install fpdf
+        pip install -r requirements.txt  # Asegurarse de que las dependencias se instalen
 
     # Ejecutar el script
     - name: Generate PDF with grid
@@ -33,4 +33,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: plantilla_con_cuadricula
-        path: plantilla_con_cuadricula.pdf
+        path: final_plantilla_con_cuadricula.pdf
