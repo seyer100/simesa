@@ -1,0 +1,41 @@
+/* General */
+body {
+    background-color: #f9f9f9;
+}
+
+/* Encabezado */
+.header {
+    background-color: #0d6efd; /* Azul principal */
+    color: white;
+    padding: 20px 0;
+}
+.header-logo {
+    max-height: 80px;
+}
+.header-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Formulario */
+.form-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin-top: 30px;
+}
+
+/* Pie de página */
+.footer {
+    background-color: #0d6efd;
+    color: white;
+    padding: 15px 0;
+    text-align: center;
+    margin-top: 50px;
+}
+.footer a {
+    color: white;
+    text-decoration: underline;
+}
