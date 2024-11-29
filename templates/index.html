@@ -3,39 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de PDFs</title>
+    <title>Afiliaciones al Sindicato Mexicano de Salud</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
-<body class="bg-light">
+<body>
+    <!-- Encabezado -->
+    <header class="header">
+        <div class="container d-flex justify-content-between align-items-center">
+            <img src="/static/logo1.png" alt="Logo 1" class="header-logo">
+            <h1 class="text-center flex-grow-1 header-title">Afiliaciones al Sindicato Mexicano de Salud</h1>
+            <img src="/static/logo2.png" alt="Logo 2" class="header-logo">
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
     <div class="container py-5">
-        <h1 class="text-center">Generador de PDFs desde Excel</h1>
-        <p class="text-center">Sube un archivo Excel para generar los PDFs basados en la plantilla.</p>
+        <div class="form-container">
+            <h2 class="text-center text-primary">Generador de Formularios de Afiliación</h2>
+            <p class="text-center">Sube un archivo Excel con los datos de los trabajadores para generar sus formularios de afiliación automáticamente.</p>
 
-        <!-- Formulario para subir el archivo -->
-        <form action="/upload" method="POST" enctype="multipart/form-data" class="mt-4">
-            <div class="mb-3">
-                <label for="file" class="form-label">Selecciona un archivo Excel:</label>
-                <input type="file" name="file" id="file" class="form-control" accept=".xlsx" required>
+            <!-- Formulario -->
+            <form action="/upload" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="file" class="form-label">Selecciona un archivo Excel:</label>
+                    <input type="file" name="file" id="file" class="form-control" accept=".xlsx" required>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">Generar Formularios</button>
+                </div>
+            </form>
+
+            <!-- Mensajes de éxito -->
+            {% if download_link %}
+            <div class="alert alert-success mt-4 text-center">
+                <p>¡Los formularios han sido generados exitosamente!</p>
+                <a href="{{ download_link }}" class="btn btn-success btn-lg">Descargar Formularios</a>
             </div>
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary">Generar PDFs</button>
+            {% endif %}
+
+            <!-- Mensajes de error -->
+            {% if error_message %}
+            <div class="alert alert-danger mt-4 text-center">
+                <p>{{ error_message }}</p>
             </div>
-        </form>
-
-        <!-- Descarga del archivo -->
-        {% if download_link %}
-        <div class="alert alert-success mt-4 text-center">
-            <p>¡Generación exitosa!</p>
-            <a href="{{ download_link }}" class="btn btn-success">Descargar PDFs</a>
+            {% endif %}
         </div>
-        {% endif %}
-
-        <!-- Mensajes de error -->
-        {% if error_message %}
-        <div class="alert alert-danger mt-4 text-center">
-            <p>{{ error_message }}</p>
-        </div>
-        {% endif %}
     </div>
+
+    <!-- Pie de página -->
+    <footer class="footer">
+        <div class="container">
+            <p>© Sindicato Mexicano de Salud | <a href="https://sindicatomexicanodesalud.com/" target="_blank">Visita nuestro sitio web</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
